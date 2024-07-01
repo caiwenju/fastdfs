@@ -1,0 +1,34 @@
+version: '3.7'
+services:
+  tracker:
+    image: season/fastdfs:1.2
+    restart: always
+    ports:
+      - "22122:22122"
+    command: "tracker"
+
+  storage:
+    image: season/fastdfs:1.2
+    restart: always
+    volumes:
+      - "./storage.conf:/fdfs_conf/storage.conf"
+      - "./client.conf:/fdfs_conf/client.conf"
+      - "./storage/data:/fastdfs/storage/data"
+      - "./store_path:/fastdfs/store_path"
+    environment:
+      TRACKER_SERVER: "tracker:22122"
+    depends_on:
+      - tracker
+    command: "storage"
+
+  nginx:
+    image: season/fastdfs:1.2
+    restart: always
+    volumes:
+      - "./nginx.conf:/etc/nginx/conf/nginx.conf"
+      - "./store_path:/fastdfs/store_path"
+    environment:
+      TRACKER_SERVER: "tracker:22122"
+    ports:
+      - "8082:8888"
+    command: "nginx"
